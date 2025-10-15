@@ -1,4 +1,4 @@
-# Pegasys Smart Contracts
+# Jingo Smart Contracts
 [![npm](https://img.shields.io/npm/v/@jingofi/jingo-protocol)](https://unpkg.com/@jingofi/jingo-protocol@latest/)
 
 This repo contains all of the smart contracts used to run [Pegasys](pegasys.finance). It is also distributed through [NPM](https://www.npmjs.com/package/@jingofi/jingo-protocol).
