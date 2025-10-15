@@ -5,27 +5,27 @@ This repo contains all of the smart contracts used to run [Pegasys](pegasys.fina
 
 ## Deployed Contracts
 
-### Syscoin NEVM:
+### Jingo Finance Contracts:
 
-Pegasys Token: `0xE18c200A70908c89fFA18C628fE1B83aC0065EA4`
+Jingo Token: `COMING SOON`
 
-Factory address: `0x7Bbbb6abaD521dE677aBe089C85b29e3b2021496`
+Factory address: `COMING SOON`
 
-Router address: `0x017dAd2578372CAEE5c6CddfE35eEDB3728544C4`
+Router address: `COMING SOON`
 
-MiniChefV2: `0x27F037100118548c63F945e284956073D1DC76dE`
+MiniChefV2: `COMING SOON`
 
-TimeLock: `0x2C4ce5DcE61b22d9eed75136CD5C8bbd788A243B`
+TimeLock: `COMING SOON`
 
-GovernorAlpha: `0x633Bdeb5D4b5f93933833A692e230a7d48fC2d77`
+GovernorAlpha: `COMING SOON`
 
-PegasysStaking: `0x83dd2F2bFd808b4618BF1d6c7d09714e66EE3014`
+PegasysStaking: `COMING SOON`
 
-### Syscoin Tanenbaum Testnet:
+### BSC CHAIN:
 
-Factory address: `0x577CCB2eF53F56AC9b16E0Db6550a6bAe6ba27bc`
+Factory address: `COMING SOON`
 
-Router address: `0xE18c200A70908c89fFA18C628fE1B83aC0065EA4`
+Router address: `COMING SOON`
 
 ## Running
 These contracts are compiled and deployed using [Hardhat](https://hardhat.org/).
