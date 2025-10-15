@@ -13,7 +13,7 @@ const overrides = {
   gasLimit: 9999999999,
 };
 
-describe("PegasysPair", () => {
+describe("JingoPair", () => {
   const provider = new MockProvider({
     ganacheOptions: {
       hardfork: "istanbul",
@@ -106,7 +106,7 @@ describe("PegasysPair", () => {
           "0x",
           overrides
         )
-      ).to.be.revertedWith("Pegasys: K");
+      ).to.be.revertedWith("Jingo: K");
       await pair.swap(0, expectedOutputAmount, wallet.address, "0x", overrides);
     });
   });
@@ -129,7 +129,7 @@ describe("PegasysPair", () => {
       await token0.transfer(pair.address, inputAmount);
       await expect(
         pair.swap(outputAmount.add(1), 0, wallet.address, "0x", overrides)
-      ).to.be.revertedWith("Pegasys: K");
+      ).to.be.revertedWith("Jingo: K");
       await pair.swap(outputAmount, 0, wallet.address, "0x", overrides);
     });
   });

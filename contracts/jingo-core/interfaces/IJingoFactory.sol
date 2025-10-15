@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GNU
 pragma solidity >=0.5.0;
 
-interface IPegasysFactory {
+interface IJingoFactory {
     event PairCreated(
         address indexed token0,
         address indexed token1,

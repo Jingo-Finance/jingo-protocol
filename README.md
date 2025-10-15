@@ -19,7 +19,7 @@ TimeLock: `COMING SOON`
 
 GovernorAlpha: `COMING SOON`
 
-PegasysStaking: `COMING SOON`
+JingoStaking: `COMING SOON`
 
 ### BSC CHAIN:
 

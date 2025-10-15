@@ -40,7 +40,7 @@ contract MiniChefV2 is Ownable {
         uint64 allocPoint;
     }
 
-    /// @notice Address of reward (PSYS) contract.
+    /// @notice Address of reward (JGO) contract.
     IERC20 public immutable REWARD;
     // @notice The migrator contract. It has a lot of power. Can only be set through governance (owner).
     IMigratorChef public migrator;

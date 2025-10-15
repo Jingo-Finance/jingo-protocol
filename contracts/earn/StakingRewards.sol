@@ -7,7 +7,7 @@ import "openzeppelin-contracts-legacy/math/SafeMath.sol";
 import "openzeppelin-contracts-legacy/token/ERC20/SafeERC20.sol";
 import "openzeppelin-contracts-legacy/utils/ReentrancyGuard.sol";
 
-import "../pegasys-core/interfaces/IPegasysERC20.sol";
+import "../Jingo-core/interfaces/IJingoERC20.sol";
 
 // https://docs.synthetix.io/contracts/source/contracts/stakingrewards
 contract StakingRewards is ReentrancyGuard, Ownable {
@@ -91,7 +91,7 @@ contract StakingRewards is ReentrancyGuard, Ownable {
         _balances[msg.sender] = _balances[msg.sender].add(amount);
 
         // permit
-        IPegasysERC20(address(stakingToken)).permit(
+        IJingoERC20(address(stakingToken)).permit(
             msg.sender,
             address(this),
             amount,

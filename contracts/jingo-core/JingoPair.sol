@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: GNU
 pragma solidity =0.5.16;
 
-import "./interfaces/IPegasysPair.sol";
-import "./PegasysERC20.sol";
+import "./interfaces/IJingoPair.sol";
+import "./JingoERC20.sol";
 import "./libraries/Math.sol";
 import "./libraries/UQ112x112.sol";
 import "./interfaces/IERC20.sol";
-import "./interfaces/IPegasysFactory.sol";
-import "./interfaces/IPegasysCallee.sol";
+import "./interfaces/IJingoFactory.sol";
+import "./interfaces/IJingoCallee.sol";
 
-contract PegasysPair is IPegasysPair, PegasysERC20 {
+contract JingoPair is IJingoPair, JingoERC20 {
     using SafeMath for uint256;
     using UQ112x112 for uint224;
 
@@ -31,7 +31,7 @@ contract PegasysPair is IPegasysPair, PegasysERC20 {
 
     uint256 private unlocked = 1;
     modifier lock() {
-        require(unlocked == 1, "Pegasys: LOCKED");
+        require(unlocked == 1, "Jingo: LOCKED");
         unlocked = 0;
         _;
         unlocked = 1;
@@ -61,7 +61,7 @@ contract PegasysPair is IPegasysPair, PegasysERC20 {
         );
         require(
             success && (data.length == 0 || abi.decode(data, (bool))),
-            "Pegasys: TRANSFER_FAILED"
+            "Jingo: TRANSFER_FAILED"
         );
     }
 
@@ -88,7 +88,7 @@ contract PegasysPair is IPegasysPair, PegasysERC20 {
 
     // called once by the factory at time of deployment
     function initialize(address _token0, address _token1) external {
-        require(msg.sender == factory, "Pegasys: FORBIDDEN"); // sufficient check
+        require(msg.sender == factory, "Jingo: FORBIDDEN"); // sufficient check
         token0 = _token0;
         token1 = _token1;
     }
@@ -102,7 +102,7 @@ contract PegasysPair is IPegasysPair, PegasysERC20 {
     ) private {
         require(
             balance0 <= uint112(-1) && balance1 <= uint112(-1),
-            "Pegasys: OVERFLOW"
+            "Jingo: OVERFLOW"
         );
         uint32 blockTimestamp = uint32(block.timestamp % 2**32);
         uint32 timeElapsed = blockTimestamp - blockTimestampLast; // overflow is desired
@@ -126,7 +126,7 @@ contract PegasysPair is IPegasysPair, PegasysERC20 {
         private
         returns (bool feeOn)
     {
-        address feeTo = IPegasysFactory(factory).feeTo();
+        address feeTo = IJingoFactory(factory).feeTo();
         feeOn = feeTo != address(0);
         uint256 _kLast = kLast; // gas savings
         if (feeOn) {
@@ -164,7 +164,7 @@ contract PegasysPair is IPegasysPair, PegasysERC20 {
                 amount1.mul(_totalSupply) / _reserve1
             );
         }
-        require(liquidity > 0, "Pegasys: INSUFFICIENT_LIQUIDITY_MINTED");
+        require(liquidity > 0, "Jingo: INSUFFICIENT_LIQUIDITY_MINTED");
         _mint(to, liquidity);
 
         _update(balance0, balance1, _reserve0, _reserve1);
@@ -191,7 +191,7 @@ contract PegasysPair is IPegasysPair, PegasysERC20 {
         amount1 = liquidity.mul(balance1) / _totalSupply; // using balances ensures pro-rata distribution
         require(
             amount0 > 0 && amount1 > 0,
-            "Pegasys: INSUFFICIENT_LIQUIDITY_BURNED"
+            "Jingo: INSUFFICIENT_LIQUIDITY_BURNED"
         );
         _burn(address(this), liquidity);
         _safeTransfer(_token0, to, amount0);
@@ -213,12 +213,12 @@ contract PegasysPair is IPegasysPair, PegasysERC20 {
     ) external lock {
         require(
             amount0Out > 0 || amount1Out > 0,
-            "Pegasys: INSUFFICIENT_OUTPUT_AMOUNT"
+            "Jingo: INSUFFICIENT_OUTPUT_AMOUNT"
         );
         (uint112 _reserve0, uint112 _reserve1, ) = getReserves(); // gas savings
         require(
             amount0Out < _reserve0 && amount1Out < _reserve1,
-            "Pegasys: INSUFFICIENT_LIQUIDITY"
+            "Jingo: INSUFFICIENT_LIQUIDITY"
         );
 
         uint256 balance0;
@@ -227,11 +227,11 @@ contract PegasysPair is IPegasysPair, PegasysERC20 {
             // scope for _token{0,1}, avoids stack too deep errors
             address _token0 = token0;
             address _token1 = token1;
-            require(to != _token0 && to != _token1, "Pegasys: INVALID_TO");
+            require(to != _token0 && to != _token1, "Jingo: INVALID_TO");
             if (amount0Out > 0) _safeTransfer(_token0, to, amount0Out); // optimistically transfer tokens
             if (amount1Out > 0) _safeTransfer(_token1, to, amount1Out); // optimistically transfer tokens
             if (data.length > 0)
-                IPegasysCallee(to).pegasysCall(
+                IJingoCallee(to).JingoCall(
                     msg.sender,
                     amount0Out,
                     amount1Out,
@@ -248,7 +248,7 @@ contract PegasysPair is IPegasysPair, PegasysERC20 {
             : 0;
         require(
             amount0In > 0 || amount1In > 0,
-            "Pegasys: INSUFFICIENT_INPUT_AMOUNT"
+            "Jingo: INSUFFICIENT_INPUT_AMOUNT"
         );
         {
             // scope for reserve{0,1}Adjusted, avoids stack too deep errors
@@ -257,7 +257,7 @@ contract PegasysPair is IPegasysPair, PegasysERC20 {
             require(
                 balance0Adjusted.mul(balance1Adjusted) >=
                     uint256(_reserve0).mul(_reserve1).mul(1000**2),
-                "Pegasys: K"
+                "Jingo: K"
             );
         }
 

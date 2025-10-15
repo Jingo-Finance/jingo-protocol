@@ -1,11 +1,11 @@
 // Sources flattened with hardhat v2.7.0 https://hardhat.org
 
-// File contracts/pegasys-core/interfaces/IPegasysFactory.sol
+// File contracts/Jingo-core/interfaces/IJingoFactory.sol
 
 // SPDX-License-Identifier: GNU
 pragma solidity >=0.5.0;
 
-interface IPegasysFactory {
+interface IJingoFactory {
     event PairCreated(
         address indexed token0,
         address indexed token1,
@@ -35,12 +35,12 @@ interface IPegasysFactory {
     function setFeeToSetter(address) external;
 }
 
-// File contracts/pegasys-core/interfaces/IPegasysPair.sol
+// File contracts/Jingo-core/interfaces/IJingoPair.sol
 
 // SPDX-License-Identifier: GNU
 pragma solidity >=0.5.0;
 
-interface IPegasysPair {
+interface IJingoPair {
     event Approval(
         address indexed owner,
         address indexed spender,
@@ -149,12 +149,12 @@ interface IPegasysPair {
     function initialize(address, address) external;
 }
 
-// File contracts/pegasys-core/interfaces/IPegasysERC20.sol
+// File contracts/Jingo-core/interfaces/IJingoERC20.sol
 
 // SPDX-License-Identifier: GNU
 pragma solidity >=0.5.0;
 
-interface IPegasysERC20 {
+interface IJingoERC20 {
     event Approval(
         address indexed owner,
         address indexed spender,
@@ -204,7 +204,7 @@ interface IPegasysERC20 {
     ) external;
 }
 
-// File contracts/pegasys-core/libraries/SafeMath.sol
+// File contracts/Jingo-core/libraries/SafeMath.sol
 
 // SPDX-License-Identifier: GNU
 pragma solidity =0.5.16;
@@ -225,14 +225,14 @@ library SafeMath {
     }
 }
 
-// File contracts/pegasys-core/PegasysERC20.sol
+// File contracts/Jingo-core/JingoERC20.sol
 
 pragma solidity =0.5.16;
 
-contract PegasysERC20 is IPegasysERC20 {
+contract JingoERC20 is IJingoERC20 {
     using SafeMath for uint256;
 
-    string public constant name = "Pegasys LP Token";
+    string public constant name = "Jingo LP Token";
     string public constant symbol = "PLP";
     uint8 public constant decimals = 18;
     uint256 public totalSupply;
@@ -334,7 +334,7 @@ contract PegasysERC20 is IPegasysERC20 {
         bytes32 r,
         bytes32 s
     ) external {
-        require(deadline >= block.timestamp, "Pegasys: EXPIRED");
+        require(deadline >= block.timestamp, "Jingo: EXPIRED");
         bytes32 digest = keccak256(
             abi.encodePacked(
                 "\x19\x01",
@@ -354,13 +354,13 @@ contract PegasysERC20 is IPegasysERC20 {
         address recoveredAddress = ecrecover(digest, v, r, s);
         require(
             recoveredAddress != address(0) && recoveredAddress == owner,
-            "Pegasys: INVALID_SIGNATURE"
+            "Jingo: INVALID_SIGNATURE"
         );
         _approve(owner, spender, value);
     }
 }
 
-// File contracts/pegasys-core/libraries/Math.sol
+// File contracts/Jingo-core/libraries/Math.sol
 
 pragma solidity =0.5.16;
 
@@ -386,7 +386,7 @@ library Math {
     }
 }
 
-// File contracts/pegasys-core/libraries/UQ112x112.sol
+// File contracts/Jingo-core/libraries/UQ112x112.sol
 
 pragma solidity =0.5.16;
 
@@ -409,7 +409,7 @@ library UQ112x112 {
     }
 }
 
-// File contracts/pegasys-core/interfaces/IERC20.sol
+// File contracts/Jingo-core/interfaces/IERC20.sol
 
 // SPDX-License-Identifier: GNU
 pragma solidity >=0.5.0;
@@ -448,13 +448,13 @@ interface IERC20 {
     ) external returns (bool);
 }
 
-// File contracts/pegasys-core/interfaces/IPegasysCallee.sol
+// File contracts/Jingo-core/interfaces/IJingoCallee.sol
 
 // SPDX-License-Identifier: GNU
 pragma solidity >=0.5.0;
 
-interface IPegasysCallee {
-    function pegasysCall(
+interface IJingoCallee {
+    function JingoCall(
         address sender,
         uint256 amount0,
         uint256 amount1,
@@ -462,12 +462,12 @@ interface IPegasysCallee {
     ) external;
 }
 
-// File contracts/pegasys-core/PegasysPair.sol
+// File contracts/Jingo-core/JingoPair.sol
 
 // SPDX-License-Identifier: GNU
 pragma solidity =0.5.16;
 
-contract PegasysPair is IPegasysPair, PegasysERC20 {
+contract JingoPair is IJingoPair, JingoERC20 {
     using SafeMath for uint256;
     using UQ112x112 for uint224;
 
@@ -489,7 +489,7 @@ contract PegasysPair is IPegasysPair, PegasysERC20 {
 
     uint256 private unlocked = 1;
     modifier lock() {
-        require(unlocked == 1, "Pegasys: LOCKED");
+        require(unlocked == 1, "Jingo: LOCKED");
         unlocked = 0;
         _;
         unlocked = 1;
@@ -519,7 +519,7 @@ contract PegasysPair is IPegasysPair, PegasysERC20 {
         );
         require(
             success && (data.length == 0 || abi.decode(data, (bool))),
-            "Pegasys: TRANSFER_FAILED"
+            "Jingo: TRANSFER_FAILED"
         );
     }
 
@@ -546,7 +546,7 @@ contract PegasysPair is IPegasysPair, PegasysERC20 {
 
     // called once by the factory at time of deployment
     function initialize(address _token0, address _token1) external {
-        require(msg.sender == factory, "Pegasys: FORBIDDEN"); // sufficient check
+        require(msg.sender == factory, "Jingo: FORBIDDEN"); // sufficient check
         token0 = _token0;
         token1 = _token1;
     }
@@ -560,7 +560,7 @@ contract PegasysPair is IPegasysPair, PegasysERC20 {
     ) private {
         require(
             balance0 <= uint112(-1) && balance1 <= uint112(-1),
-            "Pegasys: OVERFLOW"
+            "Jingo: OVERFLOW"
         );
         uint32 blockTimestamp = uint32(block.timestamp % 2**32);
         uint32 timeElapsed = blockTimestamp - blockTimestampLast; // overflow is desired
@@ -584,7 +584,7 @@ contract PegasysPair is IPegasysPair, PegasysERC20 {
         private
         returns (bool feeOn)
     {
-        address feeTo = IPegasysFactory(factory).feeTo();
+        address feeTo = IJingoFactory(factory).feeTo();
         feeOn = feeTo != address(0);
         uint256 _kLast = kLast; // gas savings
         if (feeOn) {
@@ -622,7 +622,7 @@ contract PegasysPair is IPegasysPair, PegasysERC20 {
                 amount1.mul(_totalSupply) / _reserve1
             );
         }
-        require(liquidity > 0, "Pegasys: INSUFFICIENT_LIQUIDITY_MINTED");
+        require(liquidity > 0, "Jingo: INSUFFICIENT_LIQUIDITY_MINTED");
         _mint(to, liquidity);
 
         _update(balance0, balance1, _reserve0, _reserve1);
@@ -649,7 +649,7 @@ contract PegasysPair is IPegasysPair, PegasysERC20 {
         amount1 = liquidity.mul(balance1) / _totalSupply; // using balances ensures pro-rata distribution
         require(
             amount0 > 0 && amount1 > 0,
-            "Pegasys: INSUFFICIENT_LIQUIDITY_BURNED"
+            "Jingo: INSUFFICIENT_LIQUIDITY_BURNED"
         );
         _burn(address(this), liquidity);
         _safeTransfer(_token0, to, amount0);
@@ -671,12 +671,12 @@ contract PegasysPair is IPegasysPair, PegasysERC20 {
     ) external lock {
         require(
             amount0Out > 0 || amount1Out > 0,
-            "Pegasys: INSUFFICIENT_OUTPUT_AMOUNT"
+            "Jingo: INSUFFICIENT_OUTPUT_AMOUNT"
         );
         (uint112 _reserve0, uint112 _reserve1, ) = getReserves(); // gas savings
         require(
             amount0Out < _reserve0 && amount1Out < _reserve1,
-            "Pegasys: INSUFFICIENT_LIQUIDITY"
+            "Jingo: INSUFFICIENT_LIQUIDITY"
         );
 
         uint256 balance0;
@@ -685,11 +685,11 @@ contract PegasysPair is IPegasysPair, PegasysERC20 {
             // scope for _token{0,1}, avoids stack too deep errors
             address _token0 = token0;
             address _token1 = token1;
-            require(to != _token0 && to != _token1, "Pegasys: INVALID_TO");
+            require(to != _token0 && to != _token1, "Jingo: INVALID_TO");
             if (amount0Out > 0) _safeTransfer(_token0, to, amount0Out); // optimistically transfer tokens
             if (amount1Out > 0) _safeTransfer(_token1, to, amount1Out); // optimistically transfer tokens
             if (data.length > 0)
-                IPegasysCallee(to).pegasysCall(
+                IJingoCallee(to).JingoCall(
                     msg.sender,
                     amount0Out,
                     amount1Out,
@@ -706,7 +706,7 @@ contract PegasysPair is IPegasysPair, PegasysERC20 {
             : 0;
         require(
             amount0In > 0 || amount1In > 0,
-            "Pegasys: INSUFFICIENT_INPUT_AMOUNT"
+            "Jingo: INSUFFICIENT_INPUT_AMOUNT"
         );
         {
             // scope for reserve{0,1}Adjusted, avoids stack too deep errors
@@ -715,7 +715,7 @@ contract PegasysPair is IPegasysPair, PegasysERC20 {
             require(
                 balance0Adjusted.mul(balance1Adjusted) >=
                     uint256(_reserve0).mul(_reserve1).mul(1000**2),
-                "Pegasys: K"
+                "Jingo: K"
             );
         }
 
@@ -750,11 +750,11 @@ contract PegasysPair is IPegasysPair, PegasysERC20 {
     }
 }
 
-// File contracts/pegasys-core/PegasysFactory.sol
+// File contracts/Jingo-core/JingoFactory.sol
 
 pragma solidity =0.5.16;
 
-contract PegasysFactory is IPegasysFactory {
+contract JingoFactory is IJingoFactory {
     address public feeTo;
     address public feeToSetter;
 
@@ -780,18 +780,18 @@ contract PegasysFactory is IPegasysFactory {
         external
         returns (address pair)
     {
-        require(tokenA != tokenB, "Pegasys: IDENTICAL_ADDRESSES");
+        require(tokenA != tokenB, "Jingo: IDENTICAL_ADDRESSES");
         (address token0, address token1) = tokenA < tokenB
             ? (tokenA, tokenB)
             : (tokenB, tokenA);
-        require(token0 != address(0), "Pegasys: ZERO_ADDRESS");
-        require(getPair[token0][token1] == address(0), "Pegasys: PAIR_EXISTS"); // single check is sufficient
-        bytes memory bytecode = type(PegasysPair).creationCode;
+        require(token0 != address(0), "Jingo: ZERO_ADDRESS");
+        require(getPair[token0][token1] == address(0), "Jingo: PAIR_EXISTS"); // single check is sufficient
+        bytes memory bytecode = type(JingoPair).creationCode;
         bytes32 salt = keccak256(abi.encodePacked(token0, token1));
         assembly {
             pair := create2(0, add(bytecode, 32), mload(bytecode), salt)
         }
-        IPegasysPair(pair).initialize(token0, token1);
+        IJingoPair(pair).initialize(token0, token1);
         getPair[token0][token1] = pair;
         getPair[token1][token0] = pair; // populate mapping in the reverse direction
         allPairs.push(pair);
@@ -799,12 +799,12 @@ contract PegasysFactory is IPegasysFactory {
     }
 
     function setFeeTo(address _feeTo) external {
-        require(msg.sender == feeToSetter, "Pegasys: FORBIDDEN");
+        require(msg.sender == feeToSetter, "Jingo: FORBIDDEN");
         feeTo = _feeTo;
     }
 
     function setFeeToSetter(address _feeToSetter) external {
-        require(msg.sender == feeToSetter, "Pegasys: FORBIDDEN");
+        require(msg.sender == feeToSetter, "Jingo: FORBIDDEN");
         feeToSetter = _feeToSetter;
     }
 }

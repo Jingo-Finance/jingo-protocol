@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GNU
 pragma solidity >=0.5.0;
 
-import "../../pegasys-core/interfaces/IPegasysFactory.sol";
-import "../../pegasys-core/interfaces/IPegasysPair.sol";
+import "../../Jingo-core/interfaces/IJingoFactory.sol";
+import "../../Jingo-core/interfaces/IJingoPair.sol";
 
 import "./SafeMath.sol";
 
-library PegasysLibrary {
+library JingoLibrary {
     using SafeMath for uint256;
 
     // returns sorted token addresses, used to handle return values from pairs sorted in this order
@@ -15,11 +15,11 @@ library PegasysLibrary {
         pure
         returns (address token0, address token1)
     {
-        require(tokenA != tokenB, "PegasysLibrary: IDENTICAL_ADDRESSES");
+        require(tokenA != tokenB, "JingoLibrary: IDENTICAL_ADDRESSES");
         (token0, token1) = tokenA < tokenB
             ? (tokenA, tokenB)
             : (tokenB, tokenA);
-        require(token0 != address(0), "PegasysLibrary: ZERO_ADDRESS");
+        require(token0 != address(0), "JingoLibrary: ZERO_ADDRESS");
     }
 
     // calculates the CREATE2 address for a pair without making any external calls
@@ -50,7 +50,7 @@ library PegasysLibrary {
         address tokenB
     ) internal view returns (uint256 reserveA, uint256 reserveB) {
         (address token0, ) = sortTokens(tokenA, tokenB);
-        (uint256 reserve0, uint256 reserve1, ) = IPegasysPair(
+        (uint256 reserve0, uint256 reserve1, ) = IJingoPair(
             pairFor(factory, tokenA, tokenB)
         ).getReserves();
         (reserveA, reserveB) = tokenA == token0
@@ -64,10 +64,10 @@ library PegasysLibrary {
         uint256 reserveA,
         uint256 reserveB
     ) internal pure returns (uint256 amountB) {
-        require(amountA > 0, "PegasysLibrary: INSUFFICIENT_AMOUNT");
+        require(amountA > 0, "JingoLibrary: INSUFFICIENT_AMOUNT");
         require(
             reserveA > 0 && reserveB > 0,
-            "PegasysLibrary: INSUFFICIENT_LIQUIDITY"
+            "JingoLibrary: INSUFFICIENT_LIQUIDITY"
         );
         amountB = amountA.mul(reserveB) / reserveA;
     }
@@ -78,10 +78,10 @@ library PegasysLibrary {
         uint256 reserveIn,
         uint256 reserveOut
     ) internal pure returns (uint256 amountOut) {
-        require(amountIn > 0, "PegasysLibrary: INSUFFICIENT_INPUT_AMOUNT");
+        require(amountIn > 0, "JingoLibrary: INSUFFICIENT_INPUT_AMOUNT");
         require(
             reserveIn > 0 && reserveOut > 0,
-            "PegasysLibrary: INSUFFICIENT_LIQUIDITY"
+            "JingoLibrary: INSUFFICIENT_LIQUIDITY"
         );
         uint256 amountInWithFee = amountIn.mul(997);
         uint256 numerator = amountInWithFee.mul(reserveOut);
@@ -95,10 +95,10 @@ library PegasysLibrary {
         uint256 reserveIn,
         uint256 reserveOut
     ) internal pure returns (uint256 amountIn) {
-        require(amountOut > 0, "PegasysLibrary: INSUFFICIENT_OUTPUT_AMOUNT");
+        require(amountOut > 0, "JingoLibrary: INSUFFICIENT_OUTPUT_AMOUNT");
         require(
             reserveIn > 0 && reserveOut > 0,
-            "PegasysLibrary: INSUFFICIENT_LIQUIDITY"
+            "JingoLibrary: INSUFFICIENT_LIQUIDITY"
         );
         uint256 numerator = reserveIn.mul(amountOut).mul(1000);
         uint256 denominator = reserveOut.sub(amountOut).mul(997);
@@ -111,7 +111,7 @@ library PegasysLibrary {
         uint256 amountIn,
         address[] memory path
     ) internal view returns (uint256[] memory amounts) {
-        require(path.length >= 2, "PegasysLibrary: INVALID_PATH");
+        require(path.length >= 2, "JingoLibrary: INVALID_PATH");
         amounts = new uint256[](path.length);
         amounts[0] = amountIn;
         for (uint256 i; i < path.length - 1; i++) {
@@ -130,7 +130,7 @@ library PegasysLibrary {
         uint256 amountOut,
         address[] memory path
     ) internal view returns (uint256[] memory amounts) {
-        require(path.length >= 2, "PegasysLibrary: INVALID_PATH");
+        require(path.length >= 2, "JingoLibrary: INVALID_PATH");
         amounts = new uint256[](path.length);
         amounts[amounts.length - 1] = amountOut;
         for (uint256 i = path.length - 1; i > 0; i--) {

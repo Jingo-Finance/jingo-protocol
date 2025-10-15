@@ -5,25 +5,25 @@ pragma solidity 0.6.12;
 
 import "./libraries/SafeERC20.sol";
 
-import "../pegasys-periphery/libraries/PegasysLibrary.sol";
-import "../pegasys-core/interfaces/IPegasysPair.sol";
-import "../pegasys-core/interfaces/IPegasysFactory.sol";
+import "../Jingo-periphery/libraries/JingoLibrary.sol";
+import "../Jingo-core/interfaces/IJingoPair.sol";
+import "../Jingo-core/interfaces/IJingoFactory.sol";
 
 import "openzeppelin-contracts-legacy/access/Ownable.sol";
 import "openzeppelin-contracts-legacy/utils/EnumerableSet.sol";
 
 /// @title Fee Collector
-/// @author Trader Joe & Pegasys
-/// @notice FeeCollector receives 0.05% of the swaps done on Pegasys in the form of an LP. It swaps those LPs
-/// to a token of choice and sends it to the PegasysStaking
+/// @author Trader Joe & Jingo
+/// @notice FeeCollector receives 0.05% of the swaps done on Jingo in the form of an LP. It swaps those LPs
+/// to a token of choice and sends it to the JingoStaking
 contract FeeCollector is Ownable {
     using EnumerableSet for EnumerableSet.AddressSet;
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
 
-    IPegasysFactory public immutable factory;
+    IJingoFactory public immutable factory;
 
-    address public immutable pegasysStaking;
+    address public immutable JingoStaking;
     address private immutable wsys;
     /// @notice Any ERC20
     address public tokenTo;
@@ -62,13 +62,13 @@ contract FeeCollector is Ownable {
     );
 
     /// @notice Constructor
-    /// @param _factory The address of PegasysFactory
-    /// @param _pegasysStaking The address of pegasysStaking
+    /// @param _factory The address of JingoFactory
+    /// @param _JingoStaking The address of JingoStaking
     /// @param _tokenTo The address of the token we want to convert to
     /// @param _wsys The address of wsys
     constructor(
         address _factory,
-        address _pegasysStaking,
+        address _JingoStaking,
         address _tokenTo,
         address _wsys
     ) public {
@@ -77,16 +77,16 @@ contract FeeCollector is Ownable {
             "FeeCollector: factory can't be address(0)"
         );
         require(
-            _pegasysStaking != address(0),
-            "FeeCollector: pegasysStaking can't be address(0)"
+            _JingoStaking != address(0),
+            "FeeCollector: JingoStaking can't be address(0)"
         );
         require(
             _tokenTo != address(0),
             "FeeCollector: token can't be address(0)"
         );
         require(_wsys != address(0), "FeeCollector: wsys can't be address(0)");
-        factory = IPegasysFactory(_factory);
-        pegasysStaking = _pegasysStaking;
+        factory = IJingoFactory(_factory);
+        JingoStaking = _JingoStaking;
         tokenTo = _tokenTo;
         wsys = _wsys;
         devAddr = _msgSender();
@@ -250,7 +250,7 @@ contract FeeCollector is Ownable {
             amount0 = IERC20(token0).balanceOf(address(this));
             amount1 = 0;
         } else {
-            IPegasysPair pair = IPegasysPair(factory.getPair(token0, token1));
+            IJingoPair pair = IJingoPair(factory.getPair(token0, token1));
             require(address(pair) != address(0), "MoneyMaker: Invalid pair");
 
             IERC20(address(pair)).safeTransfer(
@@ -297,7 +297,7 @@ contract FeeCollector is Ownable {
         if (token0 == token1) {
             uint256 amount = amount0.add(amount1);
             if (token0 == tokenTo) {
-                IERC20(tokenTo).safeTransfer(pegasysStaking, amount);
+                IERC20(tokenTo).safeTransfer(JingoStaking, amount);
                 tokenOut = amount;
             } else if (token0 == wsys) {
                 tokenOut = _toToken(wsys, amount, slippage);
@@ -308,11 +308,11 @@ contract FeeCollector is Ownable {
             }
         } else if (token0 == tokenTo) {
             // eg. TOKEN - SYS
-            IERC20(tokenTo).safeTransfer(pegasysStaking, amount0);
+            IERC20(tokenTo).safeTransfer(JingoStaking, amount0);
             tokenOut = _toToken(token1, amount1, slippage).add(amount0);
         } else if (token1 == tokenTo) {
             // eg. USDT - SYS
-            IERC20(tokenTo).safeTransfer(pegasysStaking, amount1);
+            IERC20(tokenTo).safeTransfer(JingoStaking, amount1);
             tokenOut = _toToken(token0, amount0, slippage).add(amount1);
         } else if (token0 == wsys) {
             // eg. SYS - USDC
@@ -383,7 +383,7 @@ contract FeeCollector is Ownable {
     ) internal returns (uint256 amountOut) {
         // Checks
         // X1 - X5: OK
-        IPegasysPair pair = IPegasysPair(factory.getPair(fromToken, toToken));
+        IJingoPair pair = IJingoPair(factory.getPair(fromToken, toToken));
         require(address(pair) != address(0), "MoneyMaker: Cannot convert");
 
         (uint256 reserve0, uint256 reserve1, ) = pair.getReserves();
@@ -396,7 +396,7 @@ contract FeeCollector is Ownable {
             reserveInput
         ); // calculate amount that was transferred, this accounts for transfer taxes
 
-        amountOut = PegasysLibrary.getAmountOut(
+        amountOut = JingoLibrary.getAmountOut(
             amountInput,
             reserveInput,
             reserveOutput
@@ -408,7 +408,7 @@ contract FeeCollector is Ownable {
             /// hence why we do rest^2, i.e. calculating the slippage twice cause we actually do two swaps.
             /// This allows us to catch if a pair has low liquidity
             require(
-                PegasysLibrary.getAmountOut(
+                JingoLibrary.getAmountOut(
                     amountOut,
                     reserveOutput,
                     reserveInput
@@ -428,7 +428,7 @@ contract FeeCollector is Ownable {
     /// @param token The address of token that will be swapped
     /// @param amountIn The amount of the `token`
     /// @param slippage The accepted slippage, in basis points aka parts per 10,000 so 5000 is 50%
-    /// @return amountOut The amount of `toToken` sent to PegasysStaking
+    /// @return amountOut The amount of `toToken` sent to JingoStaking
     function _toToken(
         address token,
         uint256 amountIn,
@@ -440,6 +440,6 @@ contract FeeCollector is Ownable {
             IERC20(token).safeTransfer(devAddr, amount);
             amount = amountIn.sub(amount);
         }
-        amountOut = _swap(token, tokenTo, amount, pegasysStaking, slippage);
+        amountOut = _swap(token, tokenTo, amount, JingoStaking, slippage);
     }
 }

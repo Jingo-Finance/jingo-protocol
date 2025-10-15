@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GNU
 pragma solidity >=0.5.0;
 
-import "../../pegasys-core/interfaces/IPegasysPair.sol";
-import "../../pegasys-lib/libraries/FixedPoint.sol";
+import "../../Jingo-core/interfaces/IJingoPair.sol";
+import "../../Jingo-lib/libraries/FixedPoint.sol";
 
 // library with helper methods for oracles that are concerned with computing average prices
-library PegasysOracleLibrary {
+library JingoOracleLibrary {
     using FixedPoint for *;
 
     // helper function that returns the current block timestamp within the range of uint32, i.e. [0, 2**32 - 1]
@@ -24,15 +24,15 @@ library PegasysOracleLibrary {
         )
     {
         blockTimestamp = currentBlockTimestamp();
-        price0Cumulative = IPegasysPair(pair).price0CumulativeLast();
-        price1Cumulative = IPegasysPair(pair).price1CumulativeLast();
+        price0Cumulative = IJingoPair(pair).price0CumulativeLast();
+        price1Cumulative = IJingoPair(pair).price1CumulativeLast();
 
         // if time has elapsed since the last update on the pair, mock the accumulated price values
         (
             uint112 reserve0,
             uint112 reserve1,
             uint32 blockTimestampLast
-        ) = IPegasysPair(pair).getReserves();
+        ) = IJingoPair(pair).getReserves();
         if (blockTimestampLast != blockTimestamp) {
             // subtraction overflow is desired
             uint32 timeElapsed = blockTimestamp - blockTimestampLast;

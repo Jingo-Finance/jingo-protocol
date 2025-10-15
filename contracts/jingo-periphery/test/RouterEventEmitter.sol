@@ -1,6 +1,6 @@
 pragma solidity =0.6.6;
 
-import "../interfaces/IPegasysRouter.sol";
+import "../interfaces/IJingoRouter.sol";
 
 contract RouterEventEmitter {
     event Amounts(uint256[] amounts);
@@ -17,7 +17,7 @@ contract RouterEventEmitter {
     ) external {
         (bool success, bytes memory returnData) = router.delegatecall(
             abi.encodeWithSelector(
-                IPegasysRouter(router).swapExactTokensForTokens.selector,
+                IJingoRouter(router).swapExactTokensForTokens.selector,
                 amountIn,
                 amountOutMin,
                 path,
@@ -39,7 +39,7 @@ contract RouterEventEmitter {
     ) external {
         (bool success, bytes memory returnData) = router.delegatecall(
             abi.encodeWithSelector(
-                IPegasysRouter(router).swapTokensForExactTokens.selector,
+                IJingoRouter(router).swapTokensForExactTokens.selector,
                 amountOut,
                 amountInMax,
                 path,
@@ -60,7 +60,7 @@ contract RouterEventEmitter {
     ) external payable {
         (bool success, bytes memory returnData) = router.delegatecall(
             abi.encodeWithSelector(
-                IPegasysRouter(router).swapExactSYSForTokens.selector,
+                IJingoRouter(router).swapExactSYSForTokens.selector,
                 amountOutMin,
                 path,
                 to,
@@ -81,7 +81,7 @@ contract RouterEventEmitter {
     ) external {
         (bool success, bytes memory returnData) = router.delegatecall(
             abi.encodeWithSelector(
-                IPegasysRouter(router).swapTokensForExactSYS.selector,
+                IJingoRouter(router).swapTokensForExactSYS.selector,
                 amountOut,
                 amountInMax,
                 path,
@@ -103,7 +103,7 @@ contract RouterEventEmitter {
     ) external {
         (bool success, bytes memory returnData) = router.delegatecall(
             abi.encodeWithSelector(
-                IPegasysRouter(router).swapExactTokensForSYS.selector,
+                IJingoRouter(router).swapExactTokensForSYS.selector,
                 amountIn,
                 amountOutMin,
                 path,
@@ -115,7 +115,7 @@ contract RouterEventEmitter {
         emit Amounts(abi.decode(returnData, (uint256[])));
     }
 
-    function swapSYSForExactTokens(
+    function swaJGOForExactTokens(
         address router,
         uint256 amountOut,
         address[] calldata path,
@@ -124,7 +124,7 @@ contract RouterEventEmitter {
     ) external payable {
         (bool success, bytes memory returnData) = router.delegatecall(
             abi.encodeWithSelector(
-                IPegasysRouter(router).swapSYSForExactTokens.selector,
+                IJingoRouter(router).swaJGOForExactTokens.selector,
                 amountOut,
                 path,
                 to,

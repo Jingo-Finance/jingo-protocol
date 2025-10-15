@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GNU
 pragma solidity >=0.5.0;
 
-interface IPegasysERC20 {
+interface IJingoERC20 {
     event Approval(
         address indexed owner,
         address indexed spender,

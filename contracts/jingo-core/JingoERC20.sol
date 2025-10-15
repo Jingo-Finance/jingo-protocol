@@ -1,12 +1,12 @@
 pragma solidity =0.5.16;
 
-import "./interfaces/IPegasysERC20.sol";
+import "./interfaces/IJingoERC20.sol";
 import "./libraries/SafeMath.sol";
 
-contract PegasysERC20 is IPegasysERC20 {
+contract JingoERC20 is IJingoERC20 {
     using SafeMath for uint256;
 
-    string public constant name = "Pegasys LP Token";
+    string public constant name = "Jingo LP Token";
     string public constant symbol = "PLP";
     uint8 public constant decimals = 18;
     uint256 public totalSupply;
@@ -108,7 +108,7 @@ contract PegasysERC20 is IPegasysERC20 {
         bytes32 r,
         bytes32 s
     ) external {
-        require(deadline >= block.timestamp, "Pegasys: EXPIRED");
+        require(deadline >= block.timestamp, "Jingo: EXPIRED");
         bytes32 digest = keccak256(
             abi.encodePacked(
                 "\x19\x01",
@@ -128,7 +128,7 @@ contract PegasysERC20 is IPegasysERC20 {
         address recoveredAddress = ecrecover(digest, v, r, s);
         require(
             recoveredAddress != address(0) && recoveredAddress == owner,
-            "Pegasys: INVALID_SIGNATURE"
+            "Jingo: INVALID_SIGNATURE"
         );
         _approve(owner, spender, value);
     }

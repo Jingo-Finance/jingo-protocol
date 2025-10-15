@@ -5,7 +5,7 @@ import { solidity, MockProvider, createFixtureLoader } from "ethereum-waffle";
 import { getCreate2Address } from "./shared/utilities";
 import { factoryFixture } from "./shared/fixtures";
 
-import PegasysPair from "../artifacts/contracts/pegasys-core/PegasysPair.sol/PegasysPair.json";
+import JingoPair from "../artifacts/contracts/Jingo-core/JingoPair.sol/JingoPair.json";
 
 chai.use(solidity);
 
@@ -14,7 +14,7 @@ const TEST_ADDRESSES: [string, string] = [
   "0x2000000000000000000000000000000000000000",
 ];
 
-describe("PegasysFactory", () => {
+describe("JingoFactory", () => {
   const provider = new MockProvider({
     ganacheOptions: {
       hardfork: "istanbul",
@@ -50,9 +50,9 @@ describe("PegasysFactory", () => {
         BigNumber.from(1)
       );
 
-    await expect(factory.createPair(...tokens)).to.be.reverted; // Pegasys: PAIR_EXISTS
+    await expect(factory.createPair(...tokens)).to.be.reverted; // Jingo: PAIR_EXISTS
     await expect(factory.createPair(...tokens.slice().reverse())).to.be
-      .reverted; // Pegasys: PAIR_EXISTS
+      .reverted; // Jingo: PAIR_EXISTS
     expect(await factory.getPair(...tokens)).to.eq(create2Address);
     expect(await factory.getPair(...tokens.slice().reverse())).to.eq(
       create2Address
@@ -62,7 +62,7 @@ describe("PegasysFactory", () => {
 
     const pair = new Contract(
       create2Address,
-      JSON.stringify(PegasysPair.abi),
+      JSON.stringify(JingoPair.abi),
       provider
     );
     expect(await pair.factory()).to.eq(factory.address);
@@ -73,7 +73,7 @@ describe("PegasysFactory", () => {
   it("setFeeTo", async () => {
     await expect(
       factory.connect(other).setFeeTo(other.address)
-    ).to.be.revertedWith("Pegasys: FORBIDDEN");
+    ).to.be.revertedWith("Jingo: FORBIDDEN");
     await factory.setFeeTo(wallet.address);
     expect(await factory.feeTo()).to.eq(wallet.address);
   });
@@ -81,11 +81,11 @@ describe("PegasysFactory", () => {
   it("setFeeToSetter", async () => {
     await expect(
       factory.connect(other).setFeeToSetter(other.address)
-    ).to.be.revertedWith("Pegasys: FORBIDDEN");
+    ).to.be.revertedWith("Jingo: FORBIDDEN");
     await factory.setFeeToSetter(other.address);
     expect(await factory.feeToSetter()).to.eq(other.address);
     await expect(factory.setFeeToSetter(wallet.address)).to.be.revertedWith(
-      "Pegasys: FORBIDDEN"
+      "Jingo: FORBIDDEN"
     );
   });
 });

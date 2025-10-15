@@ -206,18 +206,18 @@ library SafeMath {
     }
 }
 
-contract PegasysToken {
+contract JingoToken {
     /// @notice EIP-20 token name for this token
-    string public constant name = "Pegasys";
+    string public constant name = "Jingo";
 
     /// @notice EIP-20 token symbol for this token
-    string public constant symbol = "PSYS";
+    string public constant symbol = "JGO";
 
     /// @notice EIP-20 token decimals for this token
     uint8 public constant decimals = 18;
 
     /// @notice Total number of tokens in circulation
-    uint256 public totalSupply = 100_000_000e18; // 100 million PSYS
+    uint256 public totalSupply = 100_000_000e18; // 100 million JGO
 
     /// @notice Address which may mint new tokens
     address public minter;
@@ -299,7 +299,7 @@ contract PegasysToken {
     );
 
     /**
-     * @notice Construct a new Pegasys token
+     * @notice Construct a new Jingo token
      * @param account The initial account to grant all the tokens
      * @param minter_ The account with minting ability
      */
@@ -321,7 +321,7 @@ contract PegasysToken {
     function setMinter(address minter_) external {
         require(
             msg.sender == minter,
-            "Pegasys::setMinter: only the minter can change the minter address"
+            "Jingo::setMinter: only the minter can change the minter address"
         );
         emit MinterChanged(minter, minter_);
         minter = minter_;
@@ -335,15 +335,15 @@ contract PegasysToken {
     function mint(address dst, uint256 rawAmount) external {
         require(
             msg.sender == minter,
-            "Pegasys::mint: only the minter can mint"
+            "Jingo::mint: only the minter can mint"
         );
         require(
             block.timestamp >= mintingAllowedAfter,
-            "Pegasys::mint: minting not allowed yet"
+            "Jingo::mint: minting not allowed yet"
         );
         require(
             dst != address(0),
-            "Pegasys::mint: cannot transfer to the zero address"
+            "Jingo::mint: cannot transfer to the zero address"
         );
 
         // record the mint
@@ -355,22 +355,22 @@ contract PegasysToken {
         // mint the amount
         uint96 amount = safe96(
             rawAmount,
-            "Pegasys::mint: amount exceeds 96 bits"
+            "Jingo::mint: amount exceeds 96 bits"
         );
         require(
             amount <= SafeMath.div(SafeMath.mul(totalSupply, mintCap), 100),
-            "Pegasys::mint: exceeded mint cap"
+            "Jingo::mint: exceeded mint cap"
         );
         totalSupply = safe96(
             SafeMath.add(totalSupply, amount),
-            "Pegasys::mint: totalSupply exceeds 96 bits"
+            "Jingo::mint: totalSupply exceeds 96 bits"
         );
 
         // transfer the amount to the recipient
         balances[dst] = add96(
             balances[dst],
             amount,
-            "Pegasys::mint: transfer amount overflows"
+            "Jingo::mint: transfer amount overflows"
         );
 
         emit Transfer(address(0), dst, amount);
@@ -411,7 +411,7 @@ contract PegasysToken {
         } else {
             amount = safe96(
                 rawAmount,
-                "Pegasys::approve: amount exceeds 96 bits"
+                "Jingo::approve: amount exceeds 96 bits"
             );
         }
 
@@ -446,7 +446,7 @@ contract PegasysToken {
         } else {
             amount = safe96(
                 rawAmount,
-                "Pegasys::permit: amount exceeds 96 bits"
+                "Jingo::permit: amount exceeds 96 bits"
             );
         }
 
@@ -472,9 +472,9 @@ contract PegasysToken {
             abi.encodePacked("\x19\x01", domainSeparator, structHash)
         );
         address signatory = ecrecover(digest, v, r, s);
-        require(signatory != address(0), "Pegasys::permit: invalid signature");
-        require(signatory == owner, "Pegasys::permit: unauthorized");
-        require(now <= deadline, "Pegasys::permit: signature expired");
+        require(signatory != address(0), "Jingo::permit: invalid signature");
+        require(signatory == owner, "Jingo::permit: unauthorized");
+        require(now <= deadline, "Jingo::permit: signature expired");
 
         allowances[owner][spender] = amount;
 
@@ -499,7 +499,7 @@ contract PegasysToken {
     function transfer(address dst, uint256 rawAmount) external returns (bool) {
         uint96 amount = safe96(
             rawAmount,
-            "Pegasys::transfer: amount exceeds 96 bits"
+            "Jingo::transfer: amount exceeds 96 bits"
         );
         _transferTokens(msg.sender, dst, amount);
         return true;
@@ -521,14 +521,14 @@ contract PegasysToken {
         uint96 spenderAllowance = allowances[src][spender];
         uint96 amount = safe96(
             rawAmount,
-            "Pegasys::approve: amount exceeds 96 bits"
+            "Jingo::approve: amount exceeds 96 bits"
         );
 
         if (spender != src && spenderAllowance != uint96(-1)) {
             uint96 newAllowance = sub96(
                 spenderAllowance,
                 amount,
-                "Pegasys::transferFrom: transfer amount exceeds spender allowance"
+                "Jingo::transferFrom: transfer amount exceeds spender allowance"
             );
             allowances[src][spender] = newAllowance;
 
@@ -581,13 +581,13 @@ contract PegasysToken {
         address signatory = ecrecover(digest, v, r, s);
         require(
             signatory != address(0),
-            "Pegasys::delegateBySig: invalid signature"
+            "Jingo::delegateBySig: invalid signature"
         );
         require(
             nonce == nonces[signatory]++,
-            "Pegasys::delegateBySig: invalid nonce"
+            "Jingo::delegateBySig: invalid nonce"
         );
-        require(now <= expiry, "Pegasys::delegateBySig: signature expired");
+        require(now <= expiry, "Jingo::delegateBySig: signature expired");
         return _delegate(signatory, delegatee);
     }
 
@@ -616,7 +616,7 @@ contract PegasysToken {
     {
         require(
             blockNumber < block.number,
-            "Pegasys::getPriorVotes: not yet determined"
+            "Jingo::getPriorVotes: not yet determined"
         );
 
         uint32 nCheckpoints = numCheckpoints[account];
@@ -667,22 +667,22 @@ contract PegasysToken {
     ) internal {
         require(
             src != address(0),
-            "Pegasys::_transferTokens: cannot transfer from the zero address"
+            "Jingo::_transferTokens: cannot transfer from the zero address"
         );
         require(
             dst != address(0),
-            "Pegasys::_transferTokens: cannot transfer to the zero address"
+            "Jingo::_transferTokens: cannot transfer to the zero address"
         );
 
         balances[src] = sub96(
             balances[src],
             amount,
-            "Pegasys::_transferTokens: transfer amount exceeds balance"
+            "Jingo::_transferTokens: transfer amount exceeds balance"
         );
         balances[dst] = add96(
             balances[dst],
             amount,
-            "Pegasys::_transferTokens: transfer amount overflows"
+            "Jingo::_transferTokens: transfer amount overflows"
         );
         emit Transfer(src, dst, amount);
 
@@ -703,7 +703,7 @@ contract PegasysToken {
                 uint96 srcRepNew = sub96(
                     srcRepOld,
                     amount,
-                    "Pegasys::_moveVotes: vote amount underflows"
+                    "Jingo::_moveVotes: vote amount underflows"
                 );
                 _writeCheckpoint(srcRep, srcRepNum, srcRepOld, srcRepNew);
             }
@@ -716,7 +716,7 @@ contract PegasysToken {
                 uint96 dstRepNew = add96(
                     dstRepOld,
                     amount,
-                    "Pegasys::_moveVotes: vote amount overflows"
+                    "Jingo::_moveVotes: vote amount overflows"
                 );
                 _writeCheckpoint(dstRep, dstRepNum, dstRepOld, dstRepNew);
             }
@@ -731,7 +731,7 @@ contract PegasysToken {
     ) internal {
         uint32 blockNumber = safe32(
             block.number,
-            "Pegasys::_writeCheckpoint: block number exceeds 32 bits"
+            "Jingo::_writeCheckpoint: block number exceeds 32 bits"
         );
 
         if (

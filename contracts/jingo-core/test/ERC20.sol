@@ -1,8 +1,8 @@
 pragma solidity =0.5.16;
 
-import "../PegasysERC20.sol";
+import "../JingoERC20.sol";
 
-contract ERC20 is PegasysERC20 {
+contract ERC20 is JingoERC20 {
     constructor(uint256 _totalSupply) public {
         _mint(msg.sender, _totalSupply);
     }

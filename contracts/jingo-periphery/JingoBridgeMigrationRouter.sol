@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: GNU
 pragma solidity ^0.7.6;
 
-import "../pegasys-core/interfaces/IPegasysERC20.sol";
-import "../pegasys-lib/libraries/TransferHelper.sol";
+import "../Jingo-core/interfaces/IJingoERC20.sol";
+import "../Jingo-lib/libraries/TransferHelper.sol";
 import "./interfaces/IBridgeToken.sol";
 import "./libraries/Roles.sol";
-import "./libraries/PegasysLibrary.sol";
+import "./libraries/JingoLibrary.sol";
 
-contract PegasysBridgeMigrationRouter {
+contract JingoBridgeMigrationRouter {
     using SafeMath for uint256;
     using Roles for Roles.Role;
 
@@ -22,7 +22,7 @@ contract PegasysBridgeMigrationRouter {
     modifier ensure(uint256 deadline) {
         require(
             deadline >= block.timestamp,
-            "PegasysBridgeMigrationRouter: EXPIRED"
+            "JingoBridgeMigrationRouter: EXPIRED"
         );
         _;
     }
@@ -31,7 +31,7 @@ contract PegasysBridgeMigrationRouter {
     modifier onlyAdmin() {
         require(
             adminRole.has(msg.sender),
-            "PegasysBridgeMigrationRouter: Unauthorized"
+            "JingoBridgeMigrationRouter: Unauthorized"
         );
         _;
     }
@@ -44,7 +44,7 @@ contract PegasysBridgeMigrationRouter {
     function addAdmin(address account) external onlyAdmin {
         require(
             account != address(0),
-            "PegasysBridgeMigrationRouter: Address 0 not allowed"
+            "JingoBridgeMigrationRouter: Address 0 not allowed"
         );
         adminRole.add(account);
     }
@@ -57,7 +57,7 @@ contract PegasysBridgeMigrationRouter {
     function removeAdmin(address account) external onlyAdmin {
         require(
             msg.sender != account,
-            "PegasysBridgeMigrationRouter: You can't demote yourself"
+            "JingoBridgeMigrationRouter: You can't demote yourself"
         );
         adminRole.remove(account);
     }
@@ -82,11 +82,11 @@ contract PegasysBridgeMigrationRouter {
     {
         require(
             tokenAddress != address(0),
-            "PegasysBridgeMigrationRouter: tokenAddress 0 not supported"
+            "JingoBridgeMigrationRouter: tokenAddress 0 not supported"
         );
         require(
             migratorAddress != address(0),
-            "PegasysBridgeMigrationRouter: migratorAddress 0 not supported"
+            "JingoBridgeMigrationRouter: migratorAddress 0 not supported"
         );
         uint256 amount = IBridgeToken(migratorAddress).swapSupply(tokenAddress);
         require(
@@ -105,7 +105,7 @@ contract PegasysBridgeMigrationRouter {
     function _allowToken(address tokenAddress, address spenderAddress)
         internal
     {
-        IPegasysERC20(tokenAddress).approve(spenderAddress, type(uint256).max);
+        IJingoERC20(tokenAddress).approve(spenderAddress, type(uint256).max);
     }
 
     /**
@@ -137,19 +137,19 @@ contract PegasysBridgeMigrationRouter {
             uint256 liquidityAmount
         )
     {
-        (uint112 reserve0, uint112 reserve1, ) = IPegasysPair(pairToken)
+        (uint112 reserve0, uint112 reserve1, ) = IJingoPair(pairToken)
             .getReserves();
         uint256 quote0 = amountIn0;
-        uint256 quote1 = PegasysLibrary.quote(amountIn0, reserve0, reserve1);
+        uint256 quote1 = JingoLibrary.quote(amountIn0, reserve0, reserve1);
         if (quote1 > amountIn1) {
             quote1 = amountIn1;
-            quote0 = PegasysLibrary.quote(amountIn1, reserve1, reserve0);
+            quote0 = JingoLibrary.quote(amountIn1, reserve1, reserve0);
         }
         TransferHelper.safeTransfer(token0, pairToken, quote0);
         TransferHelper.safeTransfer(token1, pairToken, quote1);
         amount0 = amountIn0 - quote0;
         amount1 = amountIn1 - quote1;
-        liquidityAmount = IPegasysPair(pairToken).mint(to);
+        liquidityAmount = IJingoPair(pairToken).mint(to);
     }
 
     /**
@@ -170,7 +170,7 @@ contract PegasysBridgeMigrationRouter {
             liquidityPair,
             amount
         );
-        (amountTokenA, amountTokenB) = IPegasysPair(liquidityPair).burn(
+        (amountTokenA, amountTokenB) = IJingoPair(liquidityPair).burn(
             address(this)
         );
     }
@@ -184,22 +184,22 @@ contract PegasysBridgeMigrationRouter {
     function _arePairsCompatible(address pairA, address pairB) internal view {
         require(
             pairA != address(0),
-            "PegasysBridgeMigrationRouter: liquidityPairFrom address 0"
+            "JingoBridgeMigrationRouter: liquidityPairFrom address 0"
         );
         require(
             pairB != address(0),
-            "PegasysBridgeMigrationRouter: liquidityPairTo address 0"
+            "JingoBridgeMigrationRouter: liquidityPairTo address 0"
         );
         require(
             pairA != pairB,
-            "PegasysBridgeMigrationRouter: Cant convert to the same liquidity pairs"
+            "JingoBridgeMigrationRouter: Cant convert to the same liquidity pairs"
         );
         require(
-            IPegasysPair(pairA).token0() == IPegasysPair(pairB).token0() ||
-                IPegasysPair(pairA).token0() == IPegasysPair(pairB).token1() ||
-                IPegasysPair(pairA).token1() == IPegasysPair(pairB).token0() ||
-                IPegasysPair(pairA).token1() == IPegasysPair(pairB).token1(),
-            "PegasysBridgeMigrationRouter: Pair does not have one token matching"
+            IJingoPair(pairA).token0() == IJingoPair(pairB).token0() ||
+                IJingoPair(pairA).token0() == IJingoPair(pairB).token1() ||
+                IJingoPair(pairA).token1() == IJingoPair(pairB).token0() ||
+                IJingoPair(pairA).token1() == IJingoPair(pairB).token1(),
+            "JingoBridgeMigrationRouter: Pair does not have one token matching"
         );
     }
 
@@ -212,14 +212,14 @@ contract PegasysBridgeMigrationRouter {
     function _migrateToken(address tokenAddress, uint256 amount) internal {
         require(
             tokenAddress != address(0),
-            "PegasysBridgeMigrationRouter: tokenAddress 0 not supported"
+            "JingoBridgeMigrationRouter: tokenAddress 0 not supported"
         );
         IBridgeToken(bridgeMigrator[tokenAddress]).swap(tokenAddress, amount);
         require(
             IBridgeToken(bridgeMigrator[tokenAddress]).balanceOf(
                 address(this)
             ) == amount,
-            "PegasysBridgeMigrationRouter: Didn't yield the correct amount"
+            "JingoBridgeMigrationRouter: Didn't yield the correct amount"
         );
     }
 
@@ -239,7 +239,7 @@ contract PegasysBridgeMigrationRouter {
     ) external ensure(deadline) {
         require(
             bridgeMigrator[token] != address(0),
-            "PegasysBridgeMigrationRouter: migrator not registered"
+            "JingoBridgeMigrationRouter: migrator not registered"
         );
         TransferHelper.safeTransferFrom(
             token,
@@ -272,7 +272,7 @@ contract PegasysBridgeMigrationRouter {
         bytes32 r,
         bytes32 s
     ) external ensure(deadline) {
-        IPegasysPair(liquidityPairFrom).permit(
+        IJingoPair(liquidityPairFrom).permit(
             msg.sender,
             address(this),
             amount,
@@ -318,24 +318,24 @@ contract PegasysBridgeMigrationRouter {
         uint256 amount
     ) internal {
         _arePairsCompatible(liquidityPairFrom, liquidityPairTo);
-        address tokenToMigrate = IPegasysPair(liquidityPairFrom).token0();
+        address tokenToMigrate = IJingoPair(liquidityPairFrom).token0();
         if (
-            IPegasysPair(liquidityPairFrom).token0() ==
-            IPegasysPair(liquidityPairTo).token0() ||
-            IPegasysPair(liquidityPairFrom).token0() ==
-            IPegasysPair(liquidityPairTo).token1()
+            IJingoPair(liquidityPairFrom).token0() ==
+            IJingoPair(liquidityPairTo).token0() ||
+            IJingoPair(liquidityPairFrom).token0() ==
+            IJingoPair(liquidityPairTo).token1()
         ) {
-            tokenToMigrate = IPegasysPair(liquidityPairFrom).token1();
+            tokenToMigrate = IJingoPair(liquidityPairFrom).token1();
         }
         address newTokenAddress = bridgeMigrator[tokenToMigrate];
         require(
             newTokenAddress != address(0),
-            "PegasysBridgeMigrationRouter: Migrator not registered for the pair"
+            "JingoBridgeMigrationRouter: Migrator not registered for the pair"
         );
         require(
-            newTokenAddress == IPegasysPair(liquidityPairTo).token0() ||
-                newTokenAddress == IPegasysPair(liquidityPairTo).token1(),
-            "PegasysBridgeMigrationRouter: Pair doesn't match the migration token"
+            newTokenAddress == IJingoPair(liquidityPairTo).token0() ||
+                newTokenAddress == IJingoPair(liquidityPairTo).token1(),
+            "JingoBridgeMigrationRouter: Pair doesn't match the migration token"
         );
 
         (uint256 amountTokenA, uint256 amountTokenB) = _rescueLiquidity(
@@ -344,38 +344,38 @@ contract PegasysBridgeMigrationRouter {
         );
         {
             uint256 amountToSwap = amountTokenA;
-            if (tokenToMigrate != IPegasysPair(liquidityPairFrom).token0()) {
+            if (tokenToMigrate != IJingoPair(liquidityPairFrom).token0()) {
                 amountToSwap = amountTokenB;
             }
             _migrateToken(tokenToMigrate, amountToSwap);
         }
         if (
-            IPegasysPair(liquidityPairFrom).token0() !=
-            IPegasysPair(liquidityPairTo).token0() &&
-            IPegasysPair(liquidityPairFrom).token1() !=
-            IPegasysPair(liquidityPairTo).token1()
+            IJingoPair(liquidityPairFrom).token0() !=
+            IJingoPair(liquidityPairTo).token0() &&
+            IJingoPair(liquidityPairFrom).token1() !=
+            IJingoPair(liquidityPairTo).token1()
         ) {
             (amountTokenA, amountTokenB) = (amountTokenB, amountTokenA);
         }
 
         (uint256 changeAmount0, uint256 changeAmount1, ) = _addLiquidity(
             liquidityPairTo,
-            IPegasysPair(liquidityPairTo).token0(),
-            IPegasysPair(liquidityPairTo).token1(),
+            IJingoPair(liquidityPairTo).token0(),
+            IJingoPair(liquidityPairTo).token1(),
             amountTokenA,
             amountTokenB,
             to
         );
         if (changeAmount0 > 0) {
             TransferHelper.safeTransfer(
-                IPegasysPair(liquidityPairTo).token0(),
+                IJingoPair(liquidityPairTo).token0(),
                 to,
                 changeAmount0
             );
         }
         if (changeAmount1 > 0) {
             TransferHelper.safeTransfer(
-                IPegasysPair(liquidityPairTo).token1(),
+                IJingoPair(liquidityPairTo).token1(),
                 to,
                 changeAmount1
             );
@@ -395,9 +395,9 @@ contract PegasysBridgeMigrationRouter {
         view
         returns (uint256 amount0, uint256 amount1)
     {
-        (uint112 reserves0, uint112 reserves1, ) = IPegasysPair(pairAddress)
+        (uint112 reserves0, uint112 reserves1, ) = IJingoPair(pairAddress)
             .getReserves();
-        uint256 totalSupply = IPegasysPair(pairAddress).totalSupply();
+        uint256 totalSupply = IJingoPair(pairAddress).totalSupply();
         amount0 = amount.mul(reserves0) / totalSupply;
         amount1 = amount.mul(reserves1) / totalSupply;
     }
@@ -418,31 +418,31 @@ contract PegasysBridgeMigrationRouter {
     ) external view returns (uint256 amount0, uint256 amount1) {
         require(
             liquidityPairFrom != address(0),
-            "PegasysBridgeMigrationRouter: liquidityPairFrom address 0 not supported"
+            "JingoBridgeMigrationRouter: liquidityPairFrom address 0 not supported"
         );
         require(
             liquidityPairTo != address(0),
-            "PegasysBridgeMigrationRouter: liquidityPairTo address 0 not supported"
+            "JingoBridgeMigrationRouter: liquidityPairTo address 0 not supported"
         );
         (uint256 amountIn0, uint256 amountIn1) = _calculateRescueLiquidity(
             liquidityPairFrom,
             amount
         );
         if (
-            IPegasysPair(liquidityPairFrom).token0() !=
-            IPegasysPair(liquidityPairTo).token0() &&
-            IPegasysPair(liquidityPairFrom).token1() !=
-            IPegasysPair(liquidityPairTo).token1()
+            IJingoPair(liquidityPairFrom).token0() !=
+            IJingoPair(liquidityPairTo).token0() &&
+            IJingoPair(liquidityPairFrom).token1() !=
+            IJingoPair(liquidityPairTo).token1()
         ) {
             (amountIn0, amountIn1) = (amountIn1, amountIn0);
         }
-        (uint112 reserve0, uint112 reserve1, ) = IPegasysPair(liquidityPairTo)
+        (uint112 reserve0, uint112 reserve1, ) = IJingoPair(liquidityPairTo)
             .getReserves();
         uint256 quote0 = amountIn0;
-        uint256 quote1 = PegasysLibrary.quote(amountIn0, reserve0, reserve1);
+        uint256 quote1 = JingoLibrary.quote(amountIn0, reserve0, reserve1);
         if (quote1 > amountIn1) {
             quote1 = amountIn1;
-            quote0 = PegasysLibrary.quote(amountIn1, reserve1, reserve0);
+            quote0 = JingoLibrary.quote(amountIn1, reserve1, reserve0);
         }
         amount0 = amountIn0 - quote0;
         amount1 = amountIn1 - quote1;

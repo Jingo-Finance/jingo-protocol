@@ -1,9 +1,9 @@
 pragma solidity =0.5.16;
 
-import "./interfaces/IPegasysFactory.sol";
-import "./PegasysPair.sol";
+import "./interfaces/IJingoFactory.sol";
+import "./JingoPair.sol";
 
-contract PegasysFactory is IPegasysFactory {
+contract JingoFactory is IJingoFactory {
     address public feeTo;
     address public feeToSetter;
 
@@ -29,18 +29,18 @@ contract PegasysFactory is IPegasysFactory {
         external
         returns (address pair)
     {
-        require(tokenA != tokenB, "Pegasys: IDENTICAL_ADDRESSES");
+        require(tokenA != tokenB, "Jingo: IDENTICAL_ADDRESSES");
         (address token0, address token1) = tokenA < tokenB
             ? (tokenA, tokenB)
             : (tokenB, tokenA);
-        require(token0 != address(0), "Pegasys: ZERO_ADDRESS");
-        require(getPair[token0][token1] == address(0), "Pegasys: PAIR_EXISTS"); // single check is sufficient
-        bytes memory bytecode = type(PegasysPair).creationCode;
+        require(token0 != address(0), "Jingo: ZERO_ADDRESS");
+        require(getPair[token0][token1] == address(0), "Jingo: PAIR_EXISTS"); // single check is sufficient
+        bytes memory bytecode = type(JingoPair).creationCode;
         bytes32 salt = keccak256(abi.encodePacked(token0, token1));
         assembly {
             pair := create2(0, add(bytecode, 32), mload(bytecode), salt)
         }
-        IPegasysPair(pair).initialize(token0, token1);
+        IJingoPair(pair).initialize(token0, token1);
         getPair[token0][token1] = pair;
         getPair[token1][token0] = pair; // populate mapping in the reverse direction
         allPairs.push(pair);
@@ -48,12 +48,12 @@ contract PegasysFactory is IPegasysFactory {
     }
 
     function setFeeTo(address _feeTo) external {
-        require(msg.sender == feeToSetter, "Pegasys: FORBIDDEN");
+        require(msg.sender == feeToSetter, "Jingo: FORBIDDEN");
         feeTo = _feeTo;
     }
 
     function setFeeToSetter(address _feeToSetter) external {
-        require(msg.sender == feeToSetter, "Pegasys: FORBIDDEN");
+        require(msg.sender == feeToSetter, "Jingo: FORBIDDEN");
         feeToSetter = _feeToSetter;
     }
 }

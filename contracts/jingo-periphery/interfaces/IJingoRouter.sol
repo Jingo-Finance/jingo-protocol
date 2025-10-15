@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GNU
 pragma solidity >=0.6.2;
 
-interface IPegasysRouter {
+interface IJingoRouter {
     function factory() external pure returns (address);
 
     function WSYS() external pure returns (address);
@@ -124,7 +124,7 @@ interface IPegasysRouter {
         uint256 deadline
     ) external returns (uint256[] memory amounts);
 
-    function swapSYSForExactTokens(
+    function swaJGOForExactTokens(
         uint256 amountOut,
         address[] calldata path,
         address to,

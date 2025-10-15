@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GNU
 pragma solidity >=0.5.0;
 
-interface IPegasysCallee {
-    function pegasysCall(
+interface IJingoCallee {
+    function JingoCall(
         address sender,
         uint256 amount0,
         uint256 amount1,

@@ -4,9 +4,9 @@ pragma solidity >=0.5.0;
 
 import "./SafeERC20Namer.sol";
 
-// produces names for pairs of tokens using Pegasys's naming scheme
+// produces names for pairs of tokens using Jingo's naming scheme
 library PairNamer {
-    string private constant TOKEN_SYMBOL_PREFIX = "PSYS:";
+    string private constant TOKEN_SYMBOL_PREFIX = "JGO:";
     string private constant TOKEN_SEPARATOR = ":";
 
     // produces a pair descriptor in the format of `${prefix}${name0}:${name1}${suffix}`
@@ -28,7 +28,7 @@ library PairNamer {
             );
     }
 
-    // produces a pair symbol in the format of `PSYS:${symbol0}:${symbol1}${suffix}`
+    // produces a pair symbol in the format of `JGO:${symbol0}:${symbol1}${suffix}`
     function pairSymbol(
         address token0,
         address token1,

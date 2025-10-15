@@ -5,14 +5,14 @@ import { ecsign } from 'ethereumjs-util'
 
 import { expandTo18Decimals, getApprovalDigest } from './shared/utilities'
 
-import ERC20 from '../artifacts/contracts/pegasys-core/test/ERC20.sol/ERC20.json'
+import ERC20 from '../artifacts/contracts/Jingo-core/test/ERC20.sol/ERC20.json'
 
 chai.use(solidity)
 
 const TOTAL_SUPPLY = expandTo18Decimals(10000)
 const TEST_AMOUNT = expandTo18Decimals(10)
 
-describe('PegasysERC20', () => {
+describe('JingoERC20', () => {
   const provider = new MockProvider()
   const [wallet, other] = provider.getWallets()
 
@@ -23,7 +23,7 @@ describe('PegasysERC20', () => {
 
   it('name, symbol, decimals, totalSupply, balanceOf, DOMAIN_SEPARATOR, PERMIT_TYPEHASH', async () => {
     const name = await token.name()
-    expect(name).to.eq('Pegasys LP Token')
+    expect(name).to.eq('Jingo LP Token')
     expect(await token.symbol()).to.eq('PLP')
     expect(await token.decimals()).to.eq(18)
     expect(await token.totalSupply()).to.eq(TOTAL_SUPPLY)

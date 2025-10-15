@@ -1,10 +1,10 @@
 {
   "name": "@jingofi/jingo-protocol",
   "version": "0.0.16",
-  "description": "Contracts for the Pegasys Dex.",
+  "description": "Contracts for the Jingo Dex.",
   "main": "index.js",
   "keywords": [
-    "pegasys",
+    "Jingo",
     "AMM",
     "defi",
     "dex",
@@ -59,7 +59,7 @@
   "bugs": {
     "url": "https://github.com/jingofi/jingo-protocol/issues"
   },
-  "homepage": "https://pegasys.finance",
+  "homepage": "https://Jingo.finance",
   "dependencies": {
     "web3": "^1.7.3"
   }

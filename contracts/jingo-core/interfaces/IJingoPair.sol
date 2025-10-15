@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GNU
 pragma solidity >=0.5.0;
 
-interface IPegasysPair {
+interface IJingoPair {
     event Approval(
         address indexed owner,
         address indexed spender,

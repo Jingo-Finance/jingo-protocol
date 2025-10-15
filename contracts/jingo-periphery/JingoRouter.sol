@@ -1,22 +1,22 @@
 pragma solidity =0.6.6;
 
-import "../pegasys-core/interfaces/IPegasysFactory.sol";
-import "../pegasys-lib/libraries/TransferHelper.sol";
+import "../Jingo-core/interfaces/IJingoFactory.sol";
+import "../Jingo-lib/libraries/TransferHelper.sol";
 
-import "./interfaces/IPegasysRouter.sol";
-import "./libraries/PegasysLibrary.sol";
+import "./interfaces/IJingoRouter.sol";
+import "./libraries/JingoLibrary.sol";
 import "./libraries/SafeMath.sol";
 import "./interfaces/IERC20.sol";
 import "./interfaces/IWSYS.sol";
 
-contract PegasysRouter is IPegasysRouter {
+contract JingoRouter is IJingoRouter {
     using SafeMath for uint256;
 
     address public immutable override factory;
     address public immutable override WSYS;
 
     modifier ensure(uint256 deadline) {
-        require(deadline >= block.timestamp, "PegasysRouter: EXPIRED");
+        require(deadline >= block.timestamp, "JingoRouter: EXPIRED");
         _;
     }
 
@@ -39,10 +39,10 @@ contract PegasysRouter is IPegasysRouter {
         uint256 amountBMin
     ) internal virtual returns (uint256 amountA, uint256 amountB) {
         // create the pair if it doesn't exist yet
-        if (IPegasysFactory(factory).getPair(tokenA, tokenB) == address(0)) {
-            IPegasysFactory(factory).createPair(tokenA, tokenB);
+        if (IJingoFactory(factory).getPair(tokenA, tokenB) == address(0)) {
+            IJingoFactory(factory).createPair(tokenA, tokenB);
         }
-        (uint256 reserveA, uint256 reserveB) = PegasysLibrary.getReserves(
+        (uint256 reserveA, uint256 reserveB) = JingoLibrary.getReserves(
             factory,
             tokenA,
             tokenB
@@ -50,7 +50,7 @@ contract PegasysRouter is IPegasysRouter {
         if (reserveA == 0 && reserveB == 0) {
             (amountA, amountB) = (amountADesired, amountBDesired);
         } else {
-            uint256 amountBOptimal = PegasysLibrary.quote(
+            uint256 amountBOptimal = JingoLibrary.quote(
                 amountADesired,
                 reserveA,
                 reserveB
@@ -58,11 +58,11 @@ contract PegasysRouter is IPegasysRouter {
             if (amountBOptimal <= amountBDesired) {
                 require(
                     amountBOptimal >= amountBMin,
-                    "PegasysRouter: INSUFFICIENT_B_AMOUNT"
+                    "JingoRouter: INSUFFICIENT_B_AMOUNT"
                 );
                 (amountA, amountB) = (amountADesired, amountBOptimal);
             } else {
-                uint256 amountAOptimal = PegasysLibrary.quote(
+                uint256 amountAOptimal = JingoLibrary.quote(
                     amountBDesired,
                     reserveB,
                     reserveA
@@ -70,7 +70,7 @@ contract PegasysRouter is IPegasysRouter {
                 assert(amountAOptimal <= amountADesired);
                 require(
                     amountAOptimal >= amountAMin,
-                    "PegasysRouter: INSUFFICIENT_A_AMOUNT"
+                    "JingoRouter: INSUFFICIENT_A_AMOUNT"
                 );
                 (amountA, amountB) = (amountAOptimal, amountBDesired);
             }
@@ -105,10 +105,10 @@ contract PegasysRouter is IPegasysRouter {
             amountAMin,
             amountBMin
         );
-        address pair = PegasysLibrary.pairFor(factory, tokenA, tokenB);
+        address pair = JingoLibrary.pairFor(factory, tokenA, tokenB);
         TransferHelper.safeTransferFrom(tokenA, msg.sender, pair, amountA);
         TransferHelper.safeTransferFrom(tokenB, msg.sender, pair, amountB);
-        liquidity = IPegasysPair(pair).mint(to);
+        liquidity = IJingoPair(pair).mint(to);
     }
 
     function addLiquiditySYS(
@@ -138,11 +138,11 @@ contract PegasysRouter is IPegasysRouter {
             amountTokenMin,
             amountSYSMin
         );
-        address pair = PegasysLibrary.pairFor(factory, token, WSYS);
+        address pair = JingoLibrary.pairFor(factory, token, WSYS);
         TransferHelper.safeTransferFrom(token, msg.sender, pair, amountToken);
         IWSYS(WSYS).deposit{value: amountSYS}();
         assert(IWSYS(WSYS).transfer(pair, amountSYS));
-        liquidity = IPegasysPair(pair).mint(to);
+        liquidity = IJingoPair(pair).mint(to);
         // refund dust SYS, if any
         if (msg.value > amountSYS)
             TransferHelper.safeTransferSYS(msg.sender, msg.value - amountSYS);
@@ -164,15 +164,15 @@ contract PegasysRouter is IPegasysRouter {
         ensure(deadline)
         returns (uint256 amountA, uint256 amountB)
     {
-        address pair = PegasysLibrary.pairFor(factory, tokenA, tokenB);
-        IPegasysPair(pair).transferFrom(msg.sender, pair, liquidity); // send liquidity to pair
-        (uint256 amount0, uint256 amount1) = IPegasysPair(pair).burn(to);
-        (address token0, ) = PegasysLibrary.sortTokens(tokenA, tokenB);
+        address pair = JingoLibrary.pairFor(factory, tokenA, tokenB);
+        IJingoPair(pair).transferFrom(msg.sender, pair, liquidity); // send liquidity to pair
+        (uint256 amount0, uint256 amount1) = IJingoPair(pair).burn(to);
+        (address token0, ) = JingoLibrary.sortTokens(tokenA, tokenB);
         (amountA, amountB) = tokenA == token0
             ? (amount0, amount1)
             : (amount1, amount0);
-        require(amountA >= amountAMin, "PegasysRouter: INSUFFICIENT_A_AMOUNT");
-        require(amountB >= amountBMin, "PegasysRouter: INSUFFICIENT_B_AMOUNT");
+        require(amountA >= amountAMin, "JingoRouter: INSUFFICIENT_A_AMOUNT");
+        require(amountB >= amountBMin, "JingoRouter: INSUFFICIENT_B_AMOUNT");
     }
 
     function removeLiquiditySYS(
@@ -216,9 +216,9 @@ contract PegasysRouter is IPegasysRouter {
         bytes32 r,
         bytes32 s
     ) external virtual override returns (uint256 amountA, uint256 amountB) {
-        address pair = PegasysLibrary.pairFor(factory, tokenA, tokenB);
+        address pair = JingoLibrary.pairFor(factory, tokenA, tokenB);
         uint256 value = approveMax ? uint256(-1) : liquidity;
-        IPegasysPair(pair).permit(
+        IJingoPair(pair).permit(
             msg.sender,
             address(this),
             value,
@@ -255,9 +255,9 @@ contract PegasysRouter is IPegasysRouter {
         override
         returns (uint256 amountToken, uint256 amountSYS)
     {
-        address pair = PegasysLibrary.pairFor(factory, token, WSYS);
+        address pair = JingoLibrary.pairFor(factory, token, WSYS);
         uint256 value = approveMax ? uint256(-1) : liquidity;
-        IPegasysPair(pair).permit(
+        IJingoPair(pair).permit(
             msg.sender,
             address(this),
             value,
@@ -315,9 +315,9 @@ contract PegasysRouter is IPegasysRouter {
         bytes32 r,
         bytes32 s
     ) external virtual override returns (uint256 amountSYS) {
-        address pair = PegasysLibrary.pairFor(factory, token, WSYS);
+        address pair = JingoLibrary.pairFor(factory, token, WSYS);
         uint256 value = approveMax ? uint256(-1) : liquidity;
-        IPegasysPair(pair).permit(
+        IJingoPair(pair).permit(
             msg.sender,
             address(this),
             value,
@@ -345,15 +345,15 @@ contract PegasysRouter is IPegasysRouter {
     ) internal virtual {
         for (uint256 i; i < path.length - 1; i++) {
             (address input, address output) = (path[i], path[i + 1]);
-            (address token0, ) = PegasysLibrary.sortTokens(input, output);
+            (address token0, ) = JingoLibrary.sortTokens(input, output);
             uint256 amountOut = amounts[i + 1];
             (uint256 amount0Out, uint256 amount1Out) = input == token0
                 ? (uint256(0), amountOut)
                 : (amountOut, uint256(0));
             address to = i < path.length - 2
-                ? PegasysLibrary.pairFor(factory, output, path[i + 2])
+                ? JingoLibrary.pairFor(factory, output, path[i + 2])
                 : _to;
-            IPegasysPair(PegasysLibrary.pairFor(factory, input, output)).swap(
+            IJingoPair(JingoLibrary.pairFor(factory, input, output)).swap(
                 amount0Out,
                 amount1Out,
                 to,
@@ -375,15 +375,15 @@ contract PegasysRouter is IPegasysRouter {
         ensure(deadline)
         returns (uint256[] memory amounts)
     {
-        amounts = PegasysLibrary.getAmountsOut(factory, amountIn, path);
+        amounts = JingoLibrary.getAmountsOut(factory, amountIn, path);
         require(
             amounts[amounts.length - 1] >= amountOutMin,
-            "PegasysRouter: INSUFFICIENT_OUTPUT_AMOUNT"
+            "JingoRouter: INSUFFICIENT_OUTPUT_AMOUNT"
         );
         TransferHelper.safeTransferFrom(
             path[0],
             msg.sender,
-            PegasysLibrary.pairFor(factory, path[0], path[1]),
+            JingoLibrary.pairFor(factory, path[0], path[1]),
             amounts[0]
         );
         _swap(amounts, path, to);
@@ -402,15 +402,15 @@ contract PegasysRouter is IPegasysRouter {
         ensure(deadline)
         returns (uint256[] memory amounts)
     {
-        amounts = PegasysLibrary.getAmountsIn(factory, amountOut, path);
+        amounts = JingoLibrary.getAmountsIn(factory, amountOut, path);
         require(
             amounts[0] <= amountInMax,
-            "PegasysRouter: EXCESSIVE_INPUT_AMOUNT"
+            "JingoRouter: EXCESSIVE_INPUT_AMOUNT"
         );
         TransferHelper.safeTransferFrom(
             path[0],
             msg.sender,
-            PegasysLibrary.pairFor(factory, path[0], path[1]),
+            JingoLibrary.pairFor(factory, path[0], path[1]),
             amounts[0]
         );
         _swap(amounts, path, to);
@@ -429,16 +429,16 @@ contract PegasysRouter is IPegasysRouter {
         ensure(deadline)
         returns (uint256[] memory amounts)
     {
-        require(path[0] == WSYS, "PegasysRouter: INVALID_PATH");
-        amounts = PegasysLibrary.getAmountsOut(factory, msg.value, path);
+        require(path[0] == WSYS, "JingoRouter: INVALID_PATH");
+        amounts = JingoLibrary.getAmountsOut(factory, msg.value, path);
         require(
             amounts[amounts.length - 1] >= amountOutMin,
-            "PegasysRouter: INSUFFICIENT_OUTPUT_AMOUNT"
+            "JingoRouter: INSUFFICIENT_OUTPUT_AMOUNT"
         );
         IWSYS(WSYS).deposit{value: amounts[0]}();
         assert(
             IWSYS(WSYS).transfer(
-                PegasysLibrary.pairFor(factory, path[0], path[1]),
+                JingoLibrary.pairFor(factory, path[0], path[1]),
                 amounts[0]
             )
         );
@@ -458,16 +458,16 @@ contract PegasysRouter is IPegasysRouter {
         ensure(deadline)
         returns (uint256[] memory amounts)
     {
-        require(path[path.length - 1] == WSYS, "PegasysRouter: INVALID_PATH");
-        amounts = PegasysLibrary.getAmountsIn(factory, amountOut, path);
+        require(path[path.length - 1] == WSYS, "JingoRouter: INVALID_PATH");
+        amounts = JingoLibrary.getAmountsIn(factory, amountOut, path);
         require(
             amounts[0] <= amountInMax,
-            "PegasysRouter: EXCESSIVE_INPUT_AMOUNT"
+            "JingoRouter: EXCESSIVE_INPUT_AMOUNT"
         );
         TransferHelper.safeTransferFrom(
             path[0],
             msg.sender,
-            PegasysLibrary.pairFor(factory, path[0], path[1]),
+            JingoLibrary.pairFor(factory, path[0], path[1]),
             amounts[0]
         );
         _swap(amounts, path, address(this));
@@ -488,16 +488,16 @@ contract PegasysRouter is IPegasysRouter {
         ensure(deadline)
         returns (uint256[] memory amounts)
     {
-        require(path[path.length - 1] == WSYS, "PegasysRouter: INVALID_PATH");
-        amounts = PegasysLibrary.getAmountsOut(factory, amountIn, path);
+        require(path[path.length - 1] == WSYS, "JingoRouter: INVALID_PATH");
+        amounts = JingoLibrary.getAmountsOut(factory, amountIn, path);
         require(
             amounts[amounts.length - 1] >= amountOutMin,
-            "PegasysRouter: INSUFFICIENT_OUTPUT_AMOUNT"
+            "JingoRouter: INSUFFICIENT_OUTPUT_AMOUNT"
         );
         TransferHelper.safeTransferFrom(
             path[0],
             msg.sender,
-            PegasysLibrary.pairFor(factory, path[0], path[1]),
+            JingoLibrary.pairFor(factory, path[0], path[1]),
             amounts[0]
         );
         _swap(amounts, path, address(this));
@@ -505,7 +505,7 @@ contract PegasysRouter is IPegasysRouter {
         TransferHelper.safeTransferSYS(to, amounts[amounts.length - 1]);
     }
 
-    function swapSYSForExactTokens(
+    function swaJGOForExactTokens(
         uint256 amountOut,
         address[] calldata path,
         address to,
@@ -518,16 +518,16 @@ contract PegasysRouter is IPegasysRouter {
         ensure(deadline)
         returns (uint256[] memory amounts)
     {
-        require(path[0] == WSYS, "PegasysRouter: INVALID_PATH");
-        amounts = PegasysLibrary.getAmountsIn(factory, amountOut, path);
+        require(path[0] == WSYS, "JingoRouter: INVALID_PATH");
+        amounts = JingoLibrary.getAmountsIn(factory, amountOut, path);
         require(
             amounts[0] <= msg.value,
-            "PegasysRouter: EXCESSIVE_INPUT_AMOUNT"
+            "JingoRouter: EXCESSIVE_INPUT_AMOUNT"
         );
         IWSYS(WSYS).deposit{value: amounts[0]}();
         assert(
             IWSYS(WSYS).transfer(
-                PegasysLibrary.pairFor(factory, path[0], path[1]),
+                JingoLibrary.pairFor(factory, path[0], path[1]),
                 amounts[0]
             )
         );
@@ -545,9 +545,9 @@ contract PegasysRouter is IPegasysRouter {
     ) internal virtual {
         for (uint256 i; i < path.length - 1; i++) {
             (address input, address output) = (path[i], path[i + 1]);
-            (address token0, ) = PegasysLibrary.sortTokens(input, output);
-            IPegasysPair pair = IPegasysPair(
-                PegasysLibrary.pairFor(factory, input, output)
+            (address token0, ) = JingoLibrary.sortTokens(input, output);
+            IJingoPair pair = IJingoPair(
+                JingoLibrary.pairFor(factory, input, output)
             );
             uint256 amountInput;
             uint256 amountOutput;
@@ -560,7 +560,7 @@ contract PegasysRouter is IPegasysRouter {
                 amountInput = IERC20(input).balanceOf(address(pair)).sub(
                     reserveInput
                 );
-                amountOutput = PegasysLibrary.getAmountOut(
+                amountOutput = JingoLibrary.getAmountOut(
                     amountInput,
                     reserveInput,
                     reserveOutput
@@ -570,7 +570,7 @@ contract PegasysRouter is IPegasysRouter {
                 ? (uint256(0), amountOutput)
                 : (amountOutput, uint256(0));
             address to = i < path.length - 2
-                ? PegasysLibrary.pairFor(factory, output, path[i + 2])
+                ? JingoLibrary.pairFor(factory, output, path[i + 2])
                 : _to;
             pair.swap(amount0Out, amount1Out, to, new bytes(0));
         }
@@ -586,7 +586,7 @@ contract PegasysRouter is IPegasysRouter {
         TransferHelper.safeTransferFrom(
             path[0],
             msg.sender,
-            PegasysLibrary.pairFor(factory, path[0], path[1]),
+            JingoLibrary.pairFor(factory, path[0], path[1]),
             amountIn
         );
         uint256 balanceBefore = IERC20(path[path.length - 1]).balanceOf(to);
@@ -594,7 +594,7 @@ contract PegasysRouter is IPegasysRouter {
         require(
             IERC20(path[path.length - 1]).balanceOf(to).sub(balanceBefore) >=
                 amountOutMin,
-            "PegasysRouter: INSUFFICIENT_OUTPUT_AMOUNT"
+            "JingoRouter: INSUFFICIENT_OUTPUT_AMOUNT"
         );
     }
 
@@ -604,12 +604,12 @@ contract PegasysRouter is IPegasysRouter {
         address to,
         uint256 deadline
     ) external payable virtual override ensure(deadline) {
-        require(path[0] == WSYS, "PegasysRouter: INVALID_PATH");
+        require(path[0] == WSYS, "JingoRouter: INVALID_PATH");
         uint256 amountIn = msg.value;
         IWSYS(WSYS).deposit{value: amountIn}();
         assert(
             IWSYS(WSYS).transfer(
-                PegasysLibrary.pairFor(factory, path[0], path[1]),
+                JingoLibrary.pairFor(factory, path[0], path[1]),
                 amountIn
             )
         );
@@ -618,7 +618,7 @@ contract PegasysRouter is IPegasysRouter {
         require(
             IERC20(path[path.length - 1]).balanceOf(to).sub(balanceBefore) >=
                 amountOutMin,
-            "PegasysRouter: INSUFFICIENT_OUTPUT_AMOUNT"
+            "JingoRouter: INSUFFICIENT_OUTPUT_AMOUNT"
         );
     }
 
@@ -629,18 +629,18 @@ contract PegasysRouter is IPegasysRouter {
         address to,
         uint256 deadline
     ) external virtual override ensure(deadline) {
-        require(path[path.length - 1] == WSYS, "PegasysRouter: INVALID_PATH");
+        require(path[path.length - 1] == WSYS, "JingoRouter: INVALID_PATH");
         TransferHelper.safeTransferFrom(
             path[0],
             msg.sender,
-            PegasysLibrary.pairFor(factory, path[0], path[1]),
+            JingoLibrary.pairFor(factory, path[0], path[1]),
             amountIn
         );
         _swapSupportingFeeOnTransferTokens(path, address(this));
         uint256 amountOut = IERC20(WSYS).balanceOf(address(this));
         require(
             amountOut >= amountOutMin,
-            "PegasysRouter: INSUFFICIENT_OUTPUT_AMOUNT"
+            "JingoRouter: INSUFFICIENT_OUTPUT_AMOUNT"
         );
         IWSYS(WSYS).withdraw(amountOut);
         TransferHelper.safeTransferSYS(to, amountOut);
@@ -652,7 +652,7 @@ contract PegasysRouter is IPegasysRouter {
         uint256 reserveA,
         uint256 reserveB
     ) public pure virtual override returns (uint256 amountB) {
-        return PegasysLibrary.quote(amountA, reserveA, reserveB);
+        return JingoLibrary.quote(amountA, reserveA, reserveB);
     }
 
     function getAmountOut(
@@ -660,7 +660,7 @@ contract PegasysRouter is IPegasysRouter {
         uint256 reserveIn,
         uint256 reserveOut
     ) public pure virtual override returns (uint256 amountOut) {
-        return PegasysLibrary.getAmountOut(amountIn, reserveIn, reserveOut);
+        return JingoLibrary.getAmountOut(amountIn, reserveIn, reserveOut);
     }
 
     function getAmountIn(
@@ -668,7 +668,7 @@ contract PegasysRouter is IPegasysRouter {
         uint256 reserveIn,
         uint256 reserveOut
     ) public pure virtual override returns (uint256 amountIn) {
-        return PegasysLibrary.getAmountIn(amountOut, reserveIn, reserveOut);
+        return JingoLibrary.getAmountIn(amountOut, reserveIn, reserveOut);
     }
 
     function getAmountsOut(uint256 amountIn, address[] memory path)
@@ -678,7 +678,7 @@ contract PegasysRouter is IPegasysRouter {
         override
         returns (uint256[] memory amounts)
     {
-        return PegasysLibrary.getAmountsOut(factory, amountIn, path);
+        return JingoLibrary.getAmountsOut(factory, amountIn, path);
     }
 
     function getAmountsIn(uint256 amountOut, address[] memory path)
@@ -688,6 +688,6 @@ contract PegasysRouter is IPegasysRouter {
         override
         returns (uint256[] memory amounts)
     {
-        return PegasysLibrary.getAmountsIn(factory, amountOut, path);
+        return JingoLibrary.getAmountsIn(factory, amountOut, path);
     }
 }
