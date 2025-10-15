@@ -1,7 +1,7 @@
 # Pegasys Smart Contracts
-[![npm](https://img.shields.io/npm/v/@pollum-io/pegasys-protocol)](https://unpkg.com/@pollum-io/pegasys-protocol@latest/)
+[![npm](https://img.shields.io/npm/v/@jingofi/jingo-protocol)](https://unpkg.com/@jingofi/jingo-protocol@latest/)
 
-This repo contains all of the smart contracts used to run [Pegasys](pegasys.finance). It is also distributed through [NPM](https://www.npmjs.com/package/@pollum-io/pegasys-protocol).
+This repo contains all of the smart contracts used to run [Pegasys](pegasys.finance). It is also distributed through [NPM](https://www.npmjs.com/package/@jingofi/jingo-protocol).
 
 ## Deployed Contracts
 

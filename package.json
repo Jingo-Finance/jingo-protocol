@@ -1,5 +1,5 @@
 {
-  "name": "@pollum-io/pegasys-protocol",
+  "name": "@jingofi/jingo-protocol",
   "version": "0.0.16",
   "description": "Contracts for the Pegasys Dex.",
   "main": "index.js",
@@ -42,7 +42,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:Pollum-io/pegasys-protocol.git"
+    "url": "git@github.com:jingofi/jingo-protocol.git"
   },
   "author": "Pollum <contact@pollum.io>",
   "license": "GNU",
@@ -57,7 +57,7 @@
     "prepublishOnly": "yarn test"
   },
   "bugs": {
-    "url": "https://github.com/Pollum-io/pegasys-protocol/issues"
+    "url": "https://github.com/jingofi/jingo-protocol/issues"
   },
   "homepage": "https://pegasys.finance",
   "dependencies": {
